@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DAYS } from '../utils/priorityEngine';
 
 export default function AddSubject({ onAdd }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -6,6 +7,15 @@ export default function AddSubject({ onAdd }) {
     const [attended, setAttended] = useState('');
     const [total, setTotal] = useState('');
     const [target, setTarget] = useState(75);
+    const [schedule, setSchedule] = useState([]); // [1, 3, 5] for Mon, Wed, Fri
+
+    const toggleDay = (index) => {
+        setSchedule(prev =>
+            prev.includes(index)
+                ? prev.filter(d => d !== index)
+                : [...prev, index]
+        );
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -15,13 +25,16 @@ export default function AddSubject({ onAdd }) {
             name,
             attended: parseInt(attended),
             total: parseInt(total),
-            target: parseInt(target)
+            target: parseInt(target),
+            schedule,
+            events: [] // Initialize empty events
         });
 
         // Reset
         setName('');
         setAttended('');
         setTotal('');
+        setSchedule([]);
         setIsOpen(false);
     };
 
@@ -54,7 +67,7 @@ export default function AddSubject({ onAdd }) {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Classes Attended</label>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Attended</label>
                         <input
                             type="number"
                             placeholder="0"
@@ -78,13 +91,39 @@ export default function AddSubject({ onAdd }) {
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Target % (College Rule)</label>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Target %</label>
                     <input
                         type="number"
                         value={target}
                         onChange={e => setTarget(e.target.value)}
                         min="1" max="100"
                     />
+                </div>
+
+                {/* Timetable Selection */}
+                <div style={{ marginBottom: '1.5rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Weekly Schedule (Tap days)</label>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {DAYS.map((day, index) => (
+                            <button
+                                key={day}
+                                type="button"
+                                onClick={() => toggleDay(index)}
+                                style={{
+                                    padding: '0.5rem',
+                                    borderRadius: '8px',
+                                    border: '1px solid',
+                                    borderColor: schedule.includes(index) ? 'var(--accent-primary)' : 'var(--bg-card)',
+                                    backgroundColor: schedule.includes(index) ? 'var(--accent-primary)' : 'transparent',
+                                    color: schedule.includes(index) ? 'white' : 'var(--text-secondary)',
+                                    fontWeight: schedule.includes(index) ? 'bold' : 'normal',
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                {day}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>

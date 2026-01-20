@@ -11,12 +11,19 @@ function PrivateRoute({ children }) {
   return currentUser ? children : <Navigate to="/login" />;
 }
 
+import DailyPlan from './components/DailyPlan';
+import AddEventModal from './components/AddEventModal';
+
 function Dashboard() {
   const { logout, currentUser } = useAuth();
   const [subjects, setSubjects] = useState(() => {
+    // NOTE: We need to ensure existing subjects have 'events' array if loading from old localStorage
     const saved = localStorage.getItem('ars-subjects');
-    return saved ? JSON.parse(saved) : [];
+    const parsed = saved ? JSON.parse(saved) : [];
+    return parsed.map(s => ({ ...s, events: s.events || [], schedule: s.schedule || [] }));
   });
+
+  const [isEventModalOpen, setEventModalOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('ars-subjects', JSON.stringify(subjects));
@@ -24,6 +31,13 @@ function Dashboard() {
 
   const addSubject = (subject) => {
     setSubjects([...subjects, { ...subject, id: Date.now() }]);
+  };
+
+  const addEvent = ({ subjectId, event }) => {
+    setSubjects(subjects.map(sub => {
+      if (sub.id !== subjectId) return sub;
+      return { ...sub, events: [...sub.events, event] };
+    }));
   };
 
   const updateAttendance = (id, type) => {
@@ -62,13 +76,29 @@ function Dashboard() {
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'none', '@media(min-width: 600px)': { display: 'block' } }}>
             {currentUser.email}
           </span>
-          <button _onClick={handleLogout} onClick={handleLogout} style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', borderColor: 'var(--bg-card)' }}>
+          <button onClick={handleLogout} style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', borderColor: 'var(--bg-card)' }}>
             Logout
           </button>
         </div>
       </header>
 
       <main style={{ maxWidth: '600px', margin: '0 auto' }}>
+
+        {/* Priority Screen / Daily Plan */}
+        <DailyPlan subjects={subjects} />
+
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+          <button
+            onClick={() => setEventModalOpen(true)}
+            style={{ flex: 1, padding: '1rem', background: 'var(--bg-card)', border: '1px dashed var(--accent-primary)', color: 'var(--accent-primary)' }}
+          >
+            📅 Add Assignment / Test
+          </button>
+        </div>
+
+        <AddSubject onAdd={addSubject} />
+
         {subjects.length === 0 && (
           <div className="card" style={{ marginBottom: '2rem', textAlign: 'center', borderStyle: 'dashed' }}>
             <h2>Welcome to ARS! 👋</h2>
@@ -76,14 +106,10 @@ function Dashboard() {
               No subjects added yet. Start by adding your subjects and current attendance.
             </p>
             <p style={{ fontSize: '0.9rem', color: 'var(--accent-primary)' }}>
-              ✨ Tracks subject-wise attendance<br />
-              ✨ Predicts safe bunkable days<br />
-              ✨ Warns before detention
+              ✨ New: Priority Alerts & Calendar!
             </p>
           </div>
         )}
-
-        <AddSubject onAdd={addSubject} />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {subjects.map(sub => (
@@ -96,8 +122,15 @@ function Dashboard() {
           ))}
         </div>
 
+        <AddEventModal
+          isOpen={isEventModalOpen}
+          onClose={() => setEventModalOpen(false)}
+          subjects={subjects}
+          onSave={addEvent}
+        />
+
         <footer style={{ marginTop: '4rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-          <p>ARS v1.0 • Student First Tool</p>
+          <p>ARS v2.0 • Smart Priority Agent</p>
         </footer>
       </main>
     </div>
