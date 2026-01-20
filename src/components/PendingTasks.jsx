@@ -104,6 +104,7 @@ export default function PendingTasks({ subjects, onToggle }) {
                                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                                     <input
                                         type="checkbox"
+                                        checked={task.completed}
                                         onChange={() => onToggle(task.subjectId, task.id)}
                                         style={{ marginTop: '0.3rem', width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
                                     />

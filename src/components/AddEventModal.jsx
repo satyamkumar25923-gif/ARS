@@ -15,7 +15,7 @@ export default function AddEventModal({ isOpen, onClose, subjects, onSave }) {
         onSave({
             subjectId: parseInt(selectedSubjectId),
             event: {
-                id: Date.now(),
+                id: Date.now() + Math.random(),
                 title,
                 type,
                 date
