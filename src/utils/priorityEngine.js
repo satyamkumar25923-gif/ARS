@@ -18,8 +18,10 @@ export function getDailyPriority(subject, date) {
     let reasons = [];
 
     // 2. Check for Events (Assignments/Tests) on this date
-    // Events array: [{ title, type, date: 'YYYY-MM-DD', ... }]
-    const eventsToday = subject.events?.filter(e => isSameDay(parseISO(e.date), date)) || [];
+    // Events array: [{ title, type, date: 'YYYY-MM-DD', completed: boolean, ... }]
+    const eventsToday = subject.events?.filter(e =>
+        isSameDay(parseISO(e.date), date) && !e.completed
+    ) || [];
 
     if (eventsToday.length > 0) {
         pScore += 100; // Immediate High Priority

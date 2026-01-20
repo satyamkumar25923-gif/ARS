@@ -12,6 +12,7 @@ function PrivateRoute({ children }) {
 }
 
 import DailyPlan from './components/DailyPlan';
+import PendingTasks from './components/PendingTasks';
 import AddEventModal from './components/AddEventModal';
 
 function Dashboard() {
@@ -36,7 +37,20 @@ function Dashboard() {
   const addEvent = ({ subjectId, event }) => {
     setSubjects(subjects.map(sub => {
       if (sub.id !== subjectId) return sub;
-      return { ...sub, events: [...sub.events, event] };
+      // Ensure new events have completed: false
+      return { ...sub, events: [...sub.events, { ...event, completed: false }] };
+    }));
+  };
+
+  const toggleEvent = (subjectId, eventId) => {
+    setSubjects(subjects.map(sub => {
+      if (sub.id !== subjectId) return sub;
+      return {
+        ...sub,
+        events: sub.events.map(e =>
+          e.id === eventId ? { ...e, completed: !e.completed } : e
+        )
+      };
     }));
   };
 
@@ -63,6 +77,9 @@ function Dashboard() {
 
   return (
     <div className="app-container">
+      {/* Pending Tasks Floating Panel */}
+      <PendingTasks subjects={subjects} onToggle={toggleEvent} />
+
       <header style={{ marginBottom: '3rem', position: 'relative' }}>
         <h1 style={{ marginBottom: '0.2rem' }}>ARS 🛡️</h1>
         <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', margin: 0 }}>
