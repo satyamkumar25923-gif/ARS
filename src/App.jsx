@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import SubjectCard from './components/SubjectCard';
 import AddSubject from './components/AddSubject';
 
-function App() {
+function PrivateRoute({ children }) {
+  const { currentUser } = useAuth();
+  return currentUser ? children : <Navigate to="/login" />;
+}
+
+function Dashboard() {
+  const { logout, currentUser } = useAuth();
   const [subjects, setSubjects] = useState(() => {
     const saved = localStorage.getItem('ars-subjects');
     return saved ? JSON.parse(saved) : [];
@@ -29,12 +39,17 @@ function App() {
     setSubjects(subjects.filter(sub => sub.id !== id));
   };
 
-  // Safe to bunk calculation across all subjects?
-  // Maybe just show a summary header.
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch {
+      console.error("Failed to log out");
+    }
+  }
 
   return (
     <div className="app-container">
-      <header style={{ marginBottom: '3rem' }}>
+      <header style={{ marginBottom: '3rem', position: 'relative' }}>
         <h1 style={{ marginBottom: '0.2rem' }}>ARS 🛡️</h1>
         <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', margin: 0 }}>
           Attendance Rescue System
@@ -42,10 +57,18 @@ function App() {
         <p style={{ fontStyle: 'italic', marginTop: '0.5rem', opacity: 0.8 }}>
           "Warden se pehle warning dene wala dost" 😅
         </p>
+
+        <div style={{ position: 'absolute', top: 0, right: 0, display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'none', '@media(min-width: 600px)': { display: 'block' } }}>
+            {currentUser.email}
+          </span>
+          <button _onClick={handleLogout} onClick={handleLogout} style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', borderColor: 'var(--bg-card)' }}>
+            Logout
+          </button>
+        </div>
       </header>
 
       <main style={{ maxWidth: '600px', margin: '0 auto' }}>
-
         {subjects.length === 0 && (
           <div className="card" style={{ marginBottom: '2rem', textAlign: 'center', borderStyle: 'dashed' }}>
             <h2>Welcome to ARS! 👋</h2>
@@ -78,6 +101,27 @@ function App() {
         </footer>
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
 
