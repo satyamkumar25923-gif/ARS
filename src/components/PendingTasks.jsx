@@ -3,6 +3,7 @@ import { format, differenceInDays, parseISO } from 'date-fns';
 
 export default function PendingTasks({ subjects, onToggle, inline = false }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [completingIds, setCompletingIds] = useState([]);
 
     // Aggregate all incomplete events from all subjects
     const pendingTasks = useMemo(() => {
@@ -23,6 +24,23 @@ export default function PendingTasks({ subjects, onToggle, inline = false }) {
         // Sort by date (nearest first)
         return tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     }, [subjects]);
+
+    const handleTaskToggle = (subjectId, taskId) => {
+        const uniqueId = `${subjectId}-${taskId}`;
+
+        // Prevent multiple clicks
+        if (completingIds.includes(uniqueId)) return;
+
+        // Add to completing list to trigger animation
+        setCompletingIds(prev => [...prev, uniqueId]);
+
+        // Wait for animation to finish before actually removing
+        setTimeout(() => {
+            onToggle(subjectId, taskId);
+            // Cleanup id after removal (though item will be gone from props)
+            setCompletingIds(prev => prev.filter(id => id !== uniqueId));
+        }, 800); // 0.8s delay
+    };
 
     if (isCollapsed && !inline) {
         return (
@@ -99,29 +117,46 @@ export default function PendingTasks({ subjects, onToggle, inline = false }) {
                         else if (daysLeft <= 1) urgencyColor = 'var(--status-danger)';
                         else if (daysLeft <= 3) urgencyColor = 'var(--status-warning)';
 
+                        const uniqueKey = `${task.subjectId}-${task.id}`;
+                        const isCompleting = completingIds.includes(uniqueKey);
+
                         return (
-                            <div key={`${task.subjectId}-${task.id}`} style={{
+                            <div key={uniqueKey} style={{
                                 marginBottom: '1rem',
                                 padding: '0.8rem',
-                                backgroundColor: 'var(--bg-secondary)',
+                                backgroundColor: isCompleting ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-secondary)', // Green tint when finishing
                                 borderRadius: '8px',
-                                borderLeft: `3px solid ${urgencyColor}`,
-                                textAlign: 'left'
+                                borderLeft: `3px solid ${isCompleting ? 'var(--status-safe)' : urgencyColor}`,
+                                textAlign: 'left',
+                                opacity: isCompleting ? 0 : 1,
+                                transform: isCompleting ? 'translateX(20px)' : 'none',
+                                transition: 'all 0.6s ease-out',
+                                pointerEvents: isCompleting ? 'none' : 'auto'
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                                     <input
                                         type="checkbox"
-                                        checked={task.completed}
-                                        onChange={() => onToggle(task.subjectId, task.id)}
-                                        style={{ marginTop: '0.3rem', width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                                        checked={task.completed || isCompleting}
+                                        onChange={() => handleTaskToggle(task.subjectId, task.id)}
+                                        style={{
+                                            marginTop: '0.3rem',
+                                            width: '1.2rem',
+                                            height: '1.2rem',
+                                            cursor: 'pointer',
+                                            accentColor: isCompleting ? 'var(--status-safe)' : undefined // Forces green tick
+                                        }}
                                     />
-                                    <div>
+                                    <div style={{
+                                        textDecoration: isCompleting ? 'line-through' : 'none',
+                                        color: isCompleting ? 'var(--text-secondary)' : 'inherit',
+                                        transition: 'color 0.3s'
+                                    }}>
                                         <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>{task.title}</div>
-                                        <div style={{ fontSize: '0.8rem', color: 'var(--accent-primary)', marginBottom: '0.2rem' }}>
+                                        <div style={{ fontSize: '0.8rem', color: isCompleting ? 'var(--text-secondary)' : 'var(--accent-primary)', marginBottom: '0.2rem' }}>
                                             {task.subjectName} • {task.type}
                                         </div>
-                                        <div style={{ fontSize: '0.85rem', color: urgencyColor, fontWeight: '500' }}>
-                                            {daysLeft < 0 ? 'Overdue ⚠️' : daysLeft === 0 ? 'Due Today 🚨' : daysLeft === 1 ? 'Due Tomorrow ⏳' : `Due in ${daysLeft} days`}
+                                        <div style={{ fontSize: '0.85rem', color: isCompleting ? 'var(--status-safe)' : urgencyColor, fontWeight: '500' }}>
+                                            {isCompleting ? 'Completed! 🎉' : (daysLeft < 0 ? 'Overdue ⚠️' : daysLeft === 0 ? 'Due Today 🚨' : daysLeft === 1 ? 'Due Tomorrow ⏳' : `Due in ${daysLeft} days`)}
                                         </div>
                                         <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
                                             {format(parseISO(task.date), 'MMM d')}

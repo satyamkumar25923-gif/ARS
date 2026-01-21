@@ -97,18 +97,22 @@ export default function AttendanceSummary({ subjects, onDelete, inline = false }
                                 <button
                                     onClick={() => handleDeleteClick(sub.id)}
                                     style={{
-                                        padding: '0.1rem 0.3rem',
-                                        fontSize: '0.7rem',
-                                        background: confirmDeleteId === sub.id ? 'var(--status-danger)' : 'transparent',
+                                        padding: '0.3rem 0.6rem', // Larger touch target
+                                        fontSize: '1rem', // Bigger X
+                                        background: confirmDeleteId === sub.id ? 'var(--status-danger)' : 'rgba(255,255,255,0.05)',
                                         color: confirmDeleteId === sub.id ? 'white' : 'var(--text-secondary)',
                                         border: 'none',
                                         cursor: 'pointer',
                                         borderRadius: '4px',
-                                        minWidth: '20px'
+                                        minWidth: '24px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        lineHeight: 1
                                     }}
                                     title="Delete Subject"
                                 >
-                                    {confirmDeleteId === sub.id ? 'Sure?' : 'x'}
+                                    {confirmDeleteId === sub.id ? 'Delete' : '×'}
                                 </button>
                             </div>
                         </div>

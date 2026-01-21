@@ -26,6 +26,8 @@ function Dashboard() {
 
   const [isEventModalOpen, setEventModalOpen] = useState(false);
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     localStorage.setItem('ars-subjects', JSON.stringify(subjects));
   }, [subjects]);
@@ -141,18 +143,22 @@ function Dashboard() {
           <h1 style={{ margin: 0, fontSize: '2.4rem', background: 'linear-gradient(135deg, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 'bold' }}>
             Bunkey
           </h1>
-          <span style={{ height: '20px', width: '1px', background: 'rgba(255,255,255,0.2)' }}></span>
-          <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-            Attendance Guardian
-          </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', display: 'none', '@media(min-width: 600px)': { display: 'block' } }}>
             {currentUser.email}
           </span>
-          <button onClick={handleLogout} style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)' }}>
+          <button onClick={handleLogout} className="desktop-logout" style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)' }}>
             Logout
+          </button>
+          {/* Mobile Menu Toggle */}
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setIsMobileMenuOpen(true)}
+            style={{ background: 'transparent', border: 'none', color: 'white', fontSize: '1.5rem', cursor: 'pointer', display: 'none' }}
+          >
+            ☰
           </button>
         </div>
       </header>
@@ -173,17 +179,25 @@ function Dashboard() {
             gap: 2rem;
             align-items: start;
           }
+          
+          /* Mobile Menu Styles */
+          .mobile-menu-btn {
+             display: none;
+          }
 
-          /* Tablet */
+          /* Tablet & Mobile */
           @media (max-width: 1200px) {
             .dashboard-grid {
               grid-template-columns: 1fr 300px;
             }
             .dashboard-left-col {
-              display: none; /* Hide left sidebar or move it */
+              display: none; /* Hide left sidebar */
             }
-            .dashboard-left-col-mobile {
-              display: block; /* Show inline in center col */
+            .mobile-menu-btn {
+              display: block !important;
+            }
+            .desktop-logout {
+              display: none;
             }
           }
 
@@ -193,8 +207,100 @@ function Dashboard() {
               grid-template-columns: 1fr;
               padding: 1rem;
             }
+             .dashboard-right-col {
+              display: none; /* Hide right col on mobile too? Or stack it? User issue was left col */
+             }
           }
         `}</style>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 2000,
+            display: 'flex',
+            justifyContent: 'flex-end'
+          }} onClick={() => setIsMobileMenuOpen(false)}>
+            <div style={{
+              width: '80%',
+              maxWidth: '350px',
+              height: '100%',
+              backgroundColor: '#18181b', // Zinc 900
+              padding: '2rem',
+              boxSizing: 'border-box',
+              display: 'flex',
+              flexDirection: 'column',
+              borderLeft: '1px solid rgba(255,255,255,0.1)',
+              animation: 'slideIn 0.3s ease-out'
+            }} onClick={e => e.stopPropagation()}>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Menu</h2>
+                <button onClick={() => setIsMobileMenuOpen(false)} style={{ background: 'transparent', border: 'none', fontSize: '1.5rem', color: 'white' }}>✕</button>
+              </div>
+
+              <div className="thin-scrollbar" style={{ marginBottom: '2rem', flex: 1, overflowY: 'auto' }}>
+                <button
+                  onClick={() => { setEventModalOpen(true); setIsMobileMenuOpen(false); }}
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    background: 'rgba(99, 102, 241, 0.1)',
+                    border: '1px dashed var(--accent-primary)',
+                    color: 'var(--accent-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    marginBottom: '1rem'
+                  }}
+                >
+                  <span>+</span> Add Assignment
+                </button>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Tasks</h3>
+                  <PendingTasks subjects={subjects} onToggle={toggleEvent} inline={true} />
+                </div>
+
+                {/* Also show Attendance Summary on Mobile Menu as it might be hidden */}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Status</h3>
+                  <AttendanceSummary subjects={subjects} onDelete={deleteSubject} inline={true} />
+                </div>
+              </div>
+
+              <button
+                onClick={handleLogout}
+                style={{
+                  marginTop: 'auto',
+                  padding: '1rem',
+                  background: 'var(--bg-card)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'var(--status-danger)',
+                  width: '100%',
+                  fontWeight: 'bold',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}>
+                Logout
+              </button>
+
+            </div>
+            <style>{`
+              @keyframes slideIn {
+                from { transform: translateX(100%); }
+                to { transform: translateX(0); }
+              }
+            `}</style>
+          </div>
+        )}
 
         {/* Left Column: Agenda & Tasks */}
         <aside className="dashboard-left-col">
@@ -203,8 +309,6 @@ function Dashboard() {
               <h3 style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Tasks</h3>
               <PendingTasks subjects={subjects} onToggle={toggleEvent} inline={true} />
             </div>
-
-
 
             <button
               onClick={() => setEventModalOpen(true)}
