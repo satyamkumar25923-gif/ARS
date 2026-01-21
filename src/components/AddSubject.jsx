@@ -7,6 +7,7 @@ export default function AddSubject({ onAdd }) {
     const [attended, setAttended] = useState('');
     const [total, setTotal] = useState('');
     const [target, setTarget] = useState(75);
+    const [time, setTime] = useState('');
     const [schedule, setSchedule] = useState([]); // [1, 3, 5] for Mon, Wed, Fri
 
     const toggleDay = (index) => {
@@ -27,6 +28,7 @@ export default function AddSubject({ onAdd }) {
             total: parseInt(total),
             target: parseInt(target),
             schedule,
+            time,
             events: [] // Initialize empty events
         });
 
@@ -35,6 +37,7 @@ export default function AddSubject({ onAdd }) {
         setAttended('');
         setTotal('');
         setSchedule([]);
+        setTime('');
         setIsOpen(false);
     };
 
@@ -97,6 +100,17 @@ export default function AddSubject({ onAdd }) {
                         value={target}
                         onChange={e => setTarget(e.target.value)}
                         min="1" max="100"
+                    />
+                </div>
+
+                {/* Time Selection - Added Back */}
+                <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Class Time</label>
+                    <input
+                        type="time"
+                        value={time}
+                        onChange={e => setTime(e.target.value)}
+                        required
                     />
                 </div>
 

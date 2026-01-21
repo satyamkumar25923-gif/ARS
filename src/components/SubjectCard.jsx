@@ -19,10 +19,35 @@ export default function SubjectCard({ subject, onUpdate, onDelete }) {
         }
     };
 
+    const todayIndex = new Date().getDay();
+    const isScheduledToday = subject.schedule && subject.schedule.includes(todayIndex);
+
+    // Track cancelled state purely for visual feedback this session
+    const [isCancelled, setIsCancelled] = useState(false);
+
+    if (isCancelled) {
+        return (
+            <div className="card" style={{ textAlign: 'left', position: 'relative', borderLeft: `4px solid ${statusColor}`, filter: 'grayscale(100%)', opacity: 0.7 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <h3>{name}</h3>
+                    <span>🚫 Cancelled</span>
+                </div>
+                <button onClick={() => setIsCancelled(false)} style={{ marginTop: '1rem', width: '100%' }}>Undo</button>
+            </div>
+        );
+    }
+
     return (
         <div className="card" style={{ textAlign: 'left', position: 'relative', borderLeft: `4px solid ${statusColor}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{name}</h3>
+                <div>
+                    <h3 style={{ margin: 0, fontSize: '1.25rem' }}>{name}</h3>
+                    {isScheduledToday && subject.time && (
+                        <div style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', marginTop: '0.2rem' }}>
+                            ⏰ Today at {subject.time}
+                        </div>
+                    )}
+                </div>
                 <span style={{
                     fontSize: '0.9rem',
                     padding: '0.25rem 0.5rem',
@@ -54,25 +79,42 @@ export default function SubjectCard({ subject, onUpdate, onDelete }) {
                 ) : (
                     <p style={{ margin: 0, color: 'var(--status-danger)' }}>
                         ⚠️ Status: <strong>{result.riskLevel}</strong><br />
-                        You MUST attend <strong>{result.needed}</strong> continuous classes to reach {target}%.
+                        You MUST attend <strong>{result.needed}</strong> continuous classes.
                     </p>
                 )}
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                    onClick={() => onUpdate(subject.id, 'present')}
-                    style={{ flex: 1, backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--status-safe)', borderColor: 'var(--status-safe)' }}
-                >
-                    Present ✅
-                </button>
-                <button
-                    onClick={() => onUpdate(subject.id, 'absent')}
-                    style={{ flex: 1, backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--status-danger)', borderColor: 'var(--status-danger)' }}
-                >
-                    Absent ❌
-                </button>
-            </div>
+            {/* Attendance Actions - Only visible if scheduled for today */}
+            {isScheduledToday ? (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                        onClick={() => onUpdate(subject.id, 'present')}
+                        style={{ flex: 1, backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--status-safe)', borderColor: 'var(--status-safe)', padding: '0.5rem' }}
+                    >
+                        Present
+                    </button>
+                    <button
+                        onClick={() => onUpdate(subject.id, 'absent')}
+                        style={{ flex: 1, backgroundColor: 'rgba(239, 68, 68, 0.1)', color: 'var(--status-danger)', borderColor: 'var(--status-danger)', padding: '0.5rem' }}
+                    >
+                        Absent
+                    </button>
+                    <button
+                        onClick={() => setIsCancelled(true)}
+                        style={{ flex: 1, backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', borderColor: '#f59e0b', padding: '0.5rem' }}
+                    >
+                        Cancelled
+                    </button>
+                </div>
+            ) : (
+                <div style={{ textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                        No class scheduled for today.
+                    </p>
+                    {/* Optional: Small button to force reveal controls? */}
+                </div>
+            )}
+
 
             <button
                 onClick={handleDelete}

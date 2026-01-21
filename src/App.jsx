@@ -129,14 +129,17 @@ function Dashboard() {
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {subjects.map(sub => (
-            <SubjectCard
-              key={sub.id}
-              subject={sub}
-              onUpdate={updateAttendance}
-              onDelete={deleteSubject}
-            />
-          ))}
+          {subjects
+            .filter(sub => sub.schedule && sub.schedule.includes(new Date().getDay()))
+            .sort((a, b) => (a.time || '').localeCompare(b.time || ''))
+            .map(sub => (
+              <SubjectCard
+                key={sub.id}
+                subject={sub}
+                onUpdate={updateAttendance}
+                onDelete={deleteSubject}
+              />
+            ))}
         </div>
 
         <AddEventModal
