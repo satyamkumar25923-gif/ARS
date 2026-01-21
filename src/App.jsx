@@ -125,11 +125,11 @@ function Dashboard() {
 
       {/* Header Bar */}
       <header style={{
-        padding: '1rem 2rem',
+        padding: '0.4rem 2rem',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        background: 'rgba(39, 39, 42, 0.4)', // semi-transparent
+        background: '#151518', // Consistent solid background
         backdropFilter: 'blur(10px)',
         borderBottom: '1px solid rgba(255,255,255,0.05)',
         position: 'sticky',
@@ -137,8 +137,8 @@ function Dashboard() {
         zIndex: 1000
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <img src="/logo.png" alt="Bunkey Shield" style={{ height: '40px', borderRadius: '8px' }} />
-          <h1 style={{ margin: 0, fontSize: '1.8rem', background: 'linear-gradient(135deg, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <img src="/logo.png" alt="Bunkey Shield" style={{ height: '80px', marginTop: '-5px', marginBottom: '-5px' }} />
+          <h1 style={{ margin: 0, fontSize: '2.4rem', background: 'linear-gradient(135deg, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontWeight: 'bold' }}>
             Bunkey
           </h1>
           <span style={{ height: '20px', width: '1px', background: 'rgba(255,255,255,0.2)' }}></span>
