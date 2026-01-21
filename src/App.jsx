@@ -127,7 +127,7 @@ function Dashboard() {
       <PendingTasks subjects={subjects} onToggle={toggleEvent} />
 
       {/* Overall Status Floating Panel (Right Side) */}
-      <AttendanceSummary subjects={subjects} />
+      <AttendanceSummary subjects={subjects} onDelete={deleteSubject} />
 
       <header style={{ marginBottom: '3rem', position: 'relative' }}>
         <h1 style={{ marginBottom: '0.2rem' }}>ARS 🛡️</h1>
