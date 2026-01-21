@@ -57,9 +57,54 @@ function Dashboard() {
   const updateAttendance = (id, type) => {
     setSubjects(subjects.map(sub => {
       if (sub.id !== id) return sub;
-      const newTotal = sub.total + 1;
-      const newAttended = type === 'present' ? sub.attended + 1 : sub.attended;
-      return { ...sub, total: newTotal, attended: newAttended };
+
+      const today = new Date().toDateString();
+
+      // Handle Undo
+      if (type === 'undo') {
+        const last = sub.lastAction;
+        if (!last || last.date !== today) return sub; // Nothing to undo for today
+
+        let newTotal = sub.total;
+        let newAttended = sub.attended;
+
+        if (last.status === 'present') {
+          newTotal = Math.max(0, sub.total - 1);
+          newAttended = Math.max(0, sub.attended - 1);
+        } else if (last.status === 'absent') {
+          newTotal = Math.max(0, sub.total - 1);
+        }
+        // 'cancelled' changes nothing in counts
+
+        return {
+          ...sub,
+          total: newTotal,
+          attended: newAttended,
+          lastAction: null
+        };
+      }
+
+      // Handle New Action (Present, Absent, Cancelled)
+      // Prevent double action if already done today (basic safeguard, though UI should hide it)
+      if (sub.lastAction && sub.lastAction.date === today) return sub;
+
+      let newTotal = sub.total;
+      let newAttended = sub.attended;
+
+      if (type === 'present') {
+        newTotal = sub.total + 1;
+        newAttended = sub.attended + 1;
+      } else if (type === 'absent') {
+        newTotal = sub.total + 1;
+      }
+      // 'cancelled' updates nothing
+
+      return {
+        ...sub,
+        total: newTotal,
+        attended: newAttended,
+        lastAction: { date: today, status: type }
+      };
     }));
   };
 

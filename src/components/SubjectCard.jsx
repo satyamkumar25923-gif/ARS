@@ -22,17 +22,33 @@ export default function SubjectCard({ subject, onUpdate, onDelete }) {
     const todayIndex = new Date().getDay();
     const isScheduledToday = subject.schedule && subject.schedule.includes(todayIndex);
 
-    // Track cancelled state purely for visual feedback this session
-    const [isCancelled, setIsCancelled] = useState(false);
+    // Check if attendance already marked for today
+    const lastAction = subject.lastAction;
+    const isActionDoneToday = lastAction && lastAction.date === new Date().toDateString();
 
-    if (isCancelled) {
+    if (isActionDoneToday) {
+        let statusText = "";
+        let statusColorFn = "";
+        if (lastAction.status === 'present') { statusText = "✅ Present"; statusColorFn = "var(--status-safe)"; }
+        else if (lastAction.status === 'absent') { statusText = "❌ Absent"; statusColorFn = "var(--status-danger)"; }
+        else if (lastAction.status === 'cancelled') { statusText = "🚫 Cancelled"; statusColorFn = "#f59e0b"; }
+
         return (
-            <div className="card" style={{ textAlign: 'left', position: 'relative', borderLeft: `4px solid ${statusColor}`, filter: 'grayscale(100%)', opacity: 0.7 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <h3>{name}</h3>
-                    <span>🚫 Cancelled</span>
+            <div className="card" style={{ textAlign: 'left', position: 'relative', borderLeft: `4px solid ${statusColorFn}`, opacity: 0.8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h3 style={{ margin: 0 }}>{name}</h3>
+                        <div style={{ color: statusColorFn, fontWeight: 'bold', marginTop: '0.5rem' }}>
+                            {statusText}
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => onUpdate(subject.id, 'undo')}
+                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: 'transparent', border: '1px solid var(--text-secondary)', color: 'var(--text-secondary)' }}
+                    >
+                        Undo
+                    </button>
                 </div>
-                <button onClick={() => setIsCancelled(false)} style={{ marginTop: '1rem', width: '100%' }}>Undo</button>
             </div>
         );
     }
@@ -100,7 +116,7 @@ export default function SubjectCard({ subject, onUpdate, onDelete }) {
                         Absent
                     </button>
                     <button
-                        onClick={() => setIsCancelled(true)}
+                        onClick={() => onUpdate(subject.id, 'cancelled')}
                         style={{ flex: 1, backgroundColor: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', borderColor: '#f59e0b', padding: '0.5rem' }}
                     >
                         Cancelled
