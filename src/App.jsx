@@ -14,6 +14,7 @@ function PrivateRoute({ children }) {
 import DailyPlan from './components/DailyPlan';
 import PendingTasks from './components/PendingTasks';
 import AddEventModal from './components/AddEventModal';
+import AttendanceSummary from './components/AttendanceSummary';
 
 function Dashboard() {
   const { logout, currentUser } = useAuth();
@@ -124,6 +125,9 @@ function Dashboard() {
     <div className="app-container">
       {/* Pending Tasks Floating Panel */}
       <PendingTasks subjects={subjects} onToggle={toggleEvent} />
+
+      {/* Overall Status Floating Panel (Right Side) */}
+      <AttendanceSummary subjects={subjects} />
 
       <header style={{ marginBottom: '3rem', position: 'relative' }}>
         <h1 style={{ marginBottom: '0.2rem' }}>ARS 🛡️</h1>
