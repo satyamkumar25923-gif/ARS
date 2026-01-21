@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { calculateAttendance } from '../utils/attendanceHelper';
 
-export default function AttendanceSummary({ subjects, onDelete }) {
+export default function AttendanceSummary({ subjects, onDelete, inline = false }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
@@ -37,27 +37,41 @@ export default function AttendanceSummary({ subjects, onDelete }) {
     return (
         <div className="attendance-floating-panel" style={{
             ...overallStyle,
-            display: 'block'
+            display: 'block',
+            ...(inline ? {
+                position: 'relative',
+                right: 'auto',
+                top: 'auto',
+                transform: 'none',
+                width: '100%',
+                maxHeight: 'none',
+                boxShadow: 'none',
+                background: 'transparent',
+                border: 'none',
+                padding: 0
+            } : {})
         }}>
-            <style>
-                {`
-                    @media (max-width: 1100px) {
-                        .attendance-floating-panel {
-                            display: none !important;
+            {!inline && (
+                <style>
+                    {`
+                        @media (max-width: 1100px) {
+                            .attendance-floating-panel {
+                                display: none !important;
+                            }
                         }
-                    }
-                `}
-            </style>
+                    `}
+                </style>
+            )}
 
             <div
                 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}
             >
-                <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                <h4 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
                     Status 📊
                 </h4>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                 {subjects.map(sub => {
                     const { status, currentPct } = calculateAttendance(sub.attended, sub.total, sub.target);
                     const isSafe = status === 'safe';
@@ -68,7 +82,7 @@ export default function AttendanceSummary({ subjects, onDelete }) {
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
-                            fontSize: '0.85rem'
+                            fontSize: '1.1rem'
                         }}>
                             <div style={{ fontWeight: '500', truncate: true, maxWidth: '120px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1, marginRight: '8px' }}>
                                 {sub.name}

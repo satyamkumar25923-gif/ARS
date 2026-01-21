@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { format, differenceInDays, parseISO } from 'date-fns';
 
-export default function PendingTasks({ subjects, onToggle }) {
+export default function PendingTasks({ subjects, onToggle, inline = false }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     // Aggregate all incomplete events from all subjects
@@ -24,7 +24,7 @@ export default function PendingTasks({ subjects, onToggle }) {
         return tasks.sort((a, b) => new Date(a.date) - new Date(b.date));
     }, [subjects]);
 
-    if (isCollapsed) {
+    if (isCollapsed && !inline) {
         return (
             <div
                 onClick={() => setIsCollapsed(false)}
@@ -53,28 +53,35 @@ export default function PendingTasks({ subjects, onToggle }) {
 
     return (
         <div style={{
-            position: 'fixed', left: '20px', top: '15%', bottom: '15%',
-            width: '280px',
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '16px',
-            padding: '1.5rem',
-            zIndex: 100,
-            boxShadow: '5px 0 20px rgba(0,0,0,0.3)',
+            ...(inline ? {
+                width: '100%',
+                marginBottom: '1rem'
+            } : {
+                position: 'fixed', left: '20px', top: '15%', bottom: '15%',
+                width: '280px',
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '16px',
+                padding: '1.5rem',
+                zIndex: 100,
+                boxShadow: '5px 0 20px rgba(0,0,0,0.3)',
+                backdropFilter: 'blur(10px)',
+            }),
             display: 'flex', flexDirection: 'column',
-            backdropFilter: 'blur(10px)',
             // On mobile, might need adjustment, but user asked for "left side floating page"
-            '@media(max-width: 800px)': { display: 'none' } // Hidden on mobile by default? Or maybe just ensure z-index overrides
+            ...(!inline ? { '@media(max-width: 800px)': { display: 'none' } } : {})
         }} className="floating-tasks-panel">
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h3 style={{ margin: 0, fontSize: '1.1rem' }}>📝 Pending Work</h3>
-                <button
-                    onClick={() => setIsCollapsed(true)}
-                    style={{ background: 'transparent', border: 'none', padding: '0.2rem', fontSize: '1.2rem', color: 'var(--text-secondary)' }}
-                >
-                    ◀
-                </button>
+                {!inline && (
+                    <button
+                        onClick={() => setIsCollapsed(true)}
+                        style={{ background: 'transparent', border: 'none', padding: '0.2rem', fontSize: '1.2rem', color: 'var(--text-secondary)' }}
+                    >
+                        ◀
+                    </button>
+                )}
             </div>
 
             {pendingTasks.length === 0 ? (

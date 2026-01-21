@@ -5,21 +5,20 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import SubjectCard from './components/SubjectCard';
 import AddSubject from './components/AddSubject';
+import DailyPlan from './components/DailyPlan';
+import PendingTasks from './components/PendingTasks';
+import AddEventModal from './components/AddEventModal';
+import AttendanceSummary from './components/AttendanceSummary';
+
 
 function PrivateRoute({ children }) {
   const { currentUser } = useAuth();
   return currentUser ? children : <Navigate to="/login" />;
 }
 
-import DailyPlan from './components/DailyPlan';
-import PendingTasks from './components/PendingTasks';
-import AddEventModal from './components/AddEventModal';
-import AttendanceSummary from './components/AttendanceSummary';
-
 function Dashboard() {
   const { logout, currentUser } = useAuth();
   const [subjects, setSubjects] = useState(() => {
-    // NOTE: We need to ensure existing subjects have 'events' array if loading from old localStorage
     const saved = localStorage.getItem('ars-subjects');
     const parsed = saved ? JSON.parse(saved) : [];
     return parsed.map(s => ({ ...s, events: s.events || [], schedule: s.schedule || [] }));
@@ -38,7 +37,6 @@ function Dashboard() {
   const addEvent = ({ subjectId, event }) => {
     setSubjects(subjects.map(sub => {
       if (sub.id !== subjectId) return sub;
-      // Ensure new events have completed: false
       return { ...sub, events: [...sub.events, { ...event, completed: false }] };
     }));
   };
@@ -58,13 +56,12 @@ function Dashboard() {
   const updateAttendance = (id, type) => {
     setSubjects(subjects.map(sub => {
       if (sub.id !== id) return sub;
-
       const today = new Date().toDateString();
 
-      // Handle Undo
+      // Undo
       if (type === 'undo') {
         const last = sub.lastAction;
-        if (!last || last.date !== today) return sub; // Nothing to undo for today
+        if (!last || last.date !== today) return sub;
 
         let newTotal = sub.total;
         let newAttended = sub.attended;
@@ -75,7 +72,6 @@ function Dashboard() {
         } else if (last.status === 'absent') {
           newTotal = Math.max(0, sub.total - 1);
         }
-        // 'cancelled' changes nothing in counts
 
         return {
           ...sub,
@@ -85,8 +81,7 @@ function Dashboard() {
         };
       }
 
-      // Handle New Action (Present, Absent, Cancelled)
-      // Prevent double action if already done today (basic safeguard, though UI should hide it)
+      // New Action
       if (sub.lastAction && sub.lastAction.date === today) return sub;
 
       let newTotal = sub.total;
@@ -98,7 +93,6 @@ function Dashboard() {
       } else if (type === 'absent') {
         newTotal = sub.total + 1;
       }
-      // 'cancelled' updates nothing
 
       return {
         ...sub,
@@ -121,89 +115,181 @@ function Dashboard() {
     }
   }
 
+  // Helper to check if today has classes
+  const todayClasses = subjects
+    .filter(sub => sub.schedule && sub.schedule.includes(new Date().getDay()))
+    .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+
   return (
-    <div className="app-container">
-      {/* Pending Tasks Floating Panel */}
-      <PendingTasks subjects={subjects} onToggle={toggleEvent} />
+    <div className="app-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
-      {/* Overall Status Floating Panel (Right Side) */}
-      <AttendanceSummary subjects={subjects} onDelete={deleteSubject} />
+      {/* Header Bar */}
+      <header style={{
+        padding: '1rem 2rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        background: 'rgba(39, 39, 42, 0.4)', // semi-transparent
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <h1 style={{ margin: 0, fontSize: '1.8rem', background: 'linear-gradient(135deg, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            ARS 🛡️
+          </h1>
+          <span style={{ height: '20px', width: '1px', background: 'rgba(255,255,255,0.2)' }}></span>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            Attendance Rescue System
+          </p>
+        </div>
 
-      <header style={{ marginBottom: '3rem', position: 'relative' }}>
-        <h1 style={{ marginBottom: '0.2rem' }}>ARS 🛡️</h1>
-        <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', margin: 0 }}>
-          Attendance Rescue System
-        </p>
-        <p style={{ fontStyle: 'italic', marginTop: '0.5rem', opacity: 0.8 }}>
-          "Warden se pehle warning dene wala dost" 😅
-        </p>
-
-        <div style={{ position: 'absolute', top: 0, right: 0, display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'none', '@media(min-width: 600px)': { display: 'block' } }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', display: 'none', '@media(min-width: 600px)': { display: 'block' } }}>
             {currentUser.email}
           </span>
-          <button onClick={handleLogout} style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', borderColor: 'var(--bg-card)' }}>
+          <button onClick={handleLogout} style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)' }}>
             Logout
           </button>
         </div>
       </header>
 
-      <main style={{ maxWidth: '600px', margin: '0 auto' }}>
+      {/* Main Grid Layout */}
+      <main className="dashboard-grid" style={{
+        flex: 1,
+        padding: '2rem',
+        maxWidth: '1600px',
+        margin: '0 auto',
+        width: '100%',
+        boxSizing: 'border-box'
+      }}>
+        <style>{`
+          .dashboard-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr 300px; /* 3 Columns on large screens */
+            gap: 2rem;
+            align-items: start;
+          }
 
-        {/* Priority Screen / Daily Plan */}
-        <DailyPlan subjects={subjects} />
+          /* Tablet */
+          @media (max-width: 1200px) {
+            .dashboard-grid {
+              grid-template-columns: 1fr 300px;
+            }
+            .dashboard-left-col {
+              display: none; /* Hide left sidebar or move it */
+            }
+            .dashboard-left-col-mobile {
+              display: block; /* Show inline in center col */
+            }
+          }
 
-        {/* Action Buttons */}
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-          <button
-            onClick={() => setEventModalOpen(true)}
-            style={{ flex: 1, padding: '1rem', background: 'var(--bg-card)', border: '1px dashed var(--accent-primary)', color: 'var(--accent-primary)' }}
-          >
-            📅 Add Assignment / Test
-          </button>
-        </div>
+          /* Mobile */
+          @media (max-width: 900px) {
+            .dashboard-grid {
+              grid-template-columns: 1fr;
+              padding: 1rem;
+            }
+          }
+        `}</style>
 
-        <AddSubject onAdd={addSubject} />
+        {/* Left Column: Agenda & Tasks */}
+        <aside className="dashboard-left-col">
+          <div style={{ position: 'sticky', top: '100px' }}>
+            <div style={{ marginBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Tasks</h3>
+              <PendingTasks subjects={subjects} onToggle={toggleEvent} inline={true} />
+            </div>
 
-        <h3 style={{ marginTop: '2rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Today's Classes</h3>
 
-        {subjects.length === 0 && (
-          <div className="card" style={{ marginBottom: '2rem', textAlign: 'center', borderStyle: 'dashed' }}>
-            <h2>Welcome to ARS! 👋</h2>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              No subjects added yet. Start by adding your subjects and current attendance.
-            </p>
-            <p style={{ fontSize: '0.9rem', color: 'var(--accent-primary)' }}>
-              ✨ New: Priority Alerts & Calendar!
-            </p>
+
+            <button
+              onClick={() => setEventModalOpen(true)}
+              style={{
+                width: '100%',
+                padding: '1rem',
+                background: 'rgba(99, 102, 241, 0.1)',
+                border: '1px dashed var(--accent-primary)',
+                color: 'var(--accent-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              <span>+</span> Add Assignment
+            </button>
           </div>
-        )}
+        </aside>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {subjects
-            .filter(sub => sub.schedule && sub.schedule.includes(new Date().getDay()))
-            .sort((a, b) => (a.time || '').localeCompare(b.time || ''))
-            .map(sub => (
-              <SubjectCard
-                key={sub.id}
-                subject={sub}
-                onUpdate={updateAttendance}
-                onDelete={deleteSubject}
-              />
-            ))}
-        </div>
+        {/* Center Column: Plan & Classes */}
+        <section className="dashboard-center-col" style={{ minWidth: 0 }}>
 
-        <AddEventModal
-          isOpen={isEventModalOpen}
-          onClose={() => setEventModalOpen(false)}
-          subjects={subjects}
-          onSave={addEvent}
-        />
+          {/* Daily Plan Hero */}
+          <div style={{ marginBottom: '2rem' }}>
+            <DailyPlan subjects={subjects} />
+          </div>
 
-        <footer style={{ marginTop: '4rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-          <p>ARS v2.0 • Smart Priority Agent</p>
-        </footer>
+          {/* Today's Classes */}
+          {todayClasses.length > 0 && (
+            <div style={{ marginBottom: '3rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ margin: 0, fontSize: '1.8rem' }}>Today's Classes</h2>
+                <span style={{ background: 'var(--bg-card)', padding: '0.2rem 0.8rem', borderRadius: '12px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                {todayClasses.map(sub => (
+                  <SubjectCard
+                    key={sub.id}
+                    subject={sub}
+                    onUpdate={updateAttendance}
+                    onDelete={deleteSubject}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* All Subjects List / Add Subject */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Manage Subjects</h2>
+            </div>
+
+            <AddSubject onAdd={addSubject} />
+
+            {/* List of subjects NOT today (optional, or just list all small) */}
+
+          </div>
+        </section>
+
+        {/* Right Column: Status & Stats */}
+        <aside className="dashboard-right-col" style={{ minWidth: 0 }}>
+          <div style={{ position: 'sticky', top: '100px' }}>
+            <AttendanceSummary subjects={subjects} onDelete={deleteSubject} inline={true} />
+
+            <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <h4 style={{ margin: '0 0 1rem 0', color: 'var(--text-secondary)' }}>Pro Tip 💡</h4>
+              <p style={{ fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                Keep your attendance above <strong>75%</strong> to fly under the radar. Use the <em>Bunk Safe</em> calculator before skipping!
+              </p>
+            </div>
+          </div>
+        </aside>
+
       </main>
+
+      <AddEventModal
+        isOpen={isEventModalOpen}
+        onClose={() => setEventModalOpen(false)}
+        subjects={subjects}
+        onSave={addEvent}
+      />
     </div>
   );
 }
@@ -230,3 +316,4 @@ function App() {
 }
 
 export default App;
+
