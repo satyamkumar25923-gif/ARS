@@ -137,12 +137,13 @@ function Dashboard() {
         zIndex: 1000
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <h1 style={{ margin: 0, fontSize: '1.8rem', background: 'linear-gradient(135deg, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            ARS 🛡️
+          <img src="/logo.png" alt="Bunkey Shield" style={{ height: '40px', borderRadius: '8px' }} />
+          <h1 style={{ margin: 0, fontSize: '1.8rem', background: 'linear-gradient(135deg, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            Bunkey
           </h1>
           <span style={{ height: '20px', width: '1px', background: 'rgba(255,255,255,0.2)' }}></span>
           <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-            Attendance Rescue System
+            Attendance Guardian
           </p>
         </div>
 

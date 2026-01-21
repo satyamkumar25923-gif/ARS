@@ -38,7 +38,7 @@ export default function Register() {
             padding: '1rem'
         }}>
             <div className="card" style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
-                <h2 style={{ marginBottom: '0.5rem' }}>Join ARS 🚀</h2>
+                <h2 style={{ marginBottom: '0.5rem' }}>Join Bunkey 🛡️🐒</h2>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Create an account to start tracking</p>
 
                 {error && <div style={{

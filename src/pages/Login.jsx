@@ -47,7 +47,7 @@ export default function Login() {
         }}>
             <div className="card" style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
                 <h2 style={{ marginBottom: '0.5rem' }}>Welcome Back 👋</h2>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Login to continue to ARS</p>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Login to continue to Bunkey</p>
 
                 {error && <div style={{
                     background: 'rgba(239, 68, 68, 0.1)',

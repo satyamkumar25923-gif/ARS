@@ -1,9 +1,9 @@
-# ARS - Attendance Rescue System 🛡️
+# Bunkey - Attendance Guardian 🛡️🐒
 
 "Warden se pehle warning dene wala dost" 😅
 
 ## What is this?
-ARS is a student-first web tool that tracks your attendance and predicts exactly how many classes you need to attend (or can bunk) to stay safe.
+Bunkey is a student-first web tool that tracks your attendance and predicts exactly how many classes you need to attend (or can bunk) to stay safe.
 
 ## Features
 - **Smart Calculator**: Tells you "Attend 5 more" or "Safe to bunk 2".
