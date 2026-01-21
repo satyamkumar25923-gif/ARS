@@ -165,6 +165,8 @@ function Dashboard() {
 
         <AddSubject onAdd={addSubject} />
 
+        <h3 style={{ marginTop: '2rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Today's Classes</h3>
+
         {subjects.length === 0 && (
           <div className="card" style={{ marginBottom: '2rem', textAlign: 'center', borderStyle: 'dashed' }}>
             <h2>Welcome to ARS! 👋</h2>

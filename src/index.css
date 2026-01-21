@@ -1,20 +1,27 @@
 :root {
-  --font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  
+  --font-family: 'Patrick Hand', cursive;
+
   /* Premium Dark Palette */
-  --bg-primary: #09090b; /* Zinc 950 */
-  --bg-secondary: #18181b; /* Zinc 900 */
-  --bg-card: #27272a; /* Zinc 800 */
-  
+  --bg-primary: #09090b;
+  /* Zinc 950 */
+  --bg-secondary: #18181b;
+  /* Zinc 900 */
+  --bg-card: #27272a;
+  /* Zinc 800 */
+
   --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
-  
-  --accent-primary: #6366f1; /* Indigo 500 */
+
+  --accent-primary: #6366f1;
+  /* Indigo 500 */
   --accent-glow: rgba(99, 102, 241, 0.5);
-  
-  --status-danger: #ef4444; /* Red 500 */
-  --status-warning: #f59e0b; /* Amber 500 */
-  --status-safe: #10b981; /* Emerald 500 */
+
+  --status-danger: #ef4444;
+  /* Red 500 */
+  --status-warning: #f59e0b;
+  /* Amber 500 */
+  --status-safe: #10b981;
+  /* Emerald 500 */
 }
 
 body {
@@ -26,6 +33,11 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-family);
+  font-size: 1.35rem;
+  /* Increased size */
+  letter-spacing: 0.05em;
+  /* Added spacing */
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -94,7 +106,8 @@ h1 {
 }
 
 .btn-primary:hover {
-  background-color: #4f46e5; /* Indigo 600 */
+  background-color: #4f46e5;
+  /* Indigo 600 */
   box-shadow: 0 0 25px var(--accent-glow);
 }
 
